@@ -1,0 +1,12 @@
+/santex/node_modules
+/santex/public/hot
+/santex/public/storage
+/santex/storage/*.key
+/santex/vendor
+/santex/.env
+/santex/.env.backup
+/santex/.phpunit.result.cache
+/santex/Homestead.json
+/santex/Homestead.yaml
+/santex/npm-debug.log
+/santex/yarn-error.log

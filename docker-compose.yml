@@ -1,0 +1,56 @@
+version: '3'
+services:
+
+  #PHP Service
+  santex:
+    build:
+      context: .
+      dockerfile: santex.Dockerfile
+    image: digitalocean.com/php
+    container_name: santex
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: santex
+      SERVICE_TAGS: dev
+    working_dir: /var/www/santex
+    volumes:
+      - ./santex:/var/www/santex
+      - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - app-network
+
+  #Nginx Service
+  webserver:
+    image: nginx:alpine
+    container_name: webserver
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./santex:/var/www/santex
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - app-network
+  
+#   nodejs:
+#     image: node:14.7.0 
+#     container_name: nodejs
+#     restart: unless-stopped
+#     tty: true
+#     working_dir: /var/www/santex
+#     volumes:
+#         - ./santex/package.json:/var/www/santex/package.json
+#     command: npm i
+        
+
+#Docker Networks
+networks:
+  app-network:
+    driver: bridge
+#Volumes
+volumes:
+  dbdata:
+    driver: local
