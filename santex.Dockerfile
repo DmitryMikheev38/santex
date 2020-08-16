@@ -1,7 +1,7 @@
 FROM php:7.4-fpm
 
 # Copy composer.lock and composer.json
-COPY ./services/santex/composer.lock ./services/santex/composer.json /var/www/santex/
+COPY ./santex-service/composer.lock ./santex-service/composer.json /var/www/santex/
 
 # Set working directory
 WORKDIR /var/www/santex
@@ -39,12 +39,12 @@ RUN groupadd -g 1000 www
 RUN useradd -u 1000 -ms /bin/bash -g www www
 
 # Copy existing application directory contents
-COPY ./santex /var/www/santex
+COPY ./santex-service /var/www/santex
 
 RUN composer install && php artisan key:generate && npm i && npm run production
 
 # Copy existing application directory permissions
-COPY --chown=www:www ../services/santex /var/www/santex
+COPY --chown=www:www ./santex-service /var/www/santex
 
 # Change current user to www
 USER www

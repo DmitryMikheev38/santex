@@ -15,7 +15,7 @@ services:
       SERVICE_TAGS: dev
     working_dir: /var/www/santex
     volumes:
-      - .services/santex:/var/www/santex
+      - ./santex-service:/var/www/santex
       - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
       - app-network
@@ -30,22 +30,11 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - .services/santex:/var/www/santex
+      - ./santex-service:/var/www/santex
       - ./nginx/conf.d/:/etc/nginx/conf.d/
     networks:
       - app-network
-  
-#   nodejs:
-#     image: node:14.7.0 
-#     container_name: nodejs
-#     restart: unless-stopped
-#     tty: true
-#     working_dir: /var/www/santex
-#     volumes:
-#         - ./santex/package.json:/var/www/santex/package.json
-#     command: npm i
         
-
 #Docker Networks
 networks:
   app-network:
