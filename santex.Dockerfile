@@ -23,9 +23,8 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     nodejs \
-    npm
-
-RUN apk add --no-cache bash
+    npm \
+    bash
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
