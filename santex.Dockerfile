@@ -41,7 +41,7 @@ RUN useradd -u 1000 -ms /bin/bash -g www www
 # Copy existing application directory contents
 COPY ./santex-service /var/www/santex
 
-RUN composer install && npm i && npm run production
+RUN composer install && php artisan key:generate && npm i && npm run production
 
 # Copy existing application directory permissions
 COPY --chown=www:www ./santex-service /var/www/santex
