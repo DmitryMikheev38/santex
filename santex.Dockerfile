@@ -1,4 +1,4 @@
-FROM php:7.4-fpm
+FROM php:7.4-cli
 
 # Copy composer.lock and composer.json
 COPY ./santex-service/composer.lock ./santex-service/composer.json /var/www/santex/
@@ -23,7 +23,9 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     nodejs \
-    npm
+    npms
+
+RUN apk add --no-cache bash
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -41,7 +43,7 @@ RUN useradd -u 1000 -ms /bin/bash -g www www
 # Copy existing application directory contents
 COPY ./santex-service /var/www/santex
 
-RUN composer install && npm i && npm run production
+RUN composer install && php artisan key:generate && npm i && npm run production
 
 # Copy existing application directory permissions
 COPY --chown=www:www ./santex-service /var/www/santex
