@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     nodejs \
-    npms
+    npm
 
 RUN apk add --no-cache bash
 
