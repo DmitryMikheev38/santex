@@ -1,12 +1,13 @@
-FROM php:7.4-cli
+FROM php:7.4-apache
 
-# Copy composer.lock and composer.json
-COPY ./santex-service/composer.lock ./santex-service/composer.json /var/www/santex/
+RUN sed -ri -e 's!/var/www/html!/var/www/html/santex/public!g' /etc/apache2/sites-available/*.conf \
+    && sed -ri -e 's!/var/www/!/var/www/html/santex/pablic!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf \
+    && sed -i "/^\s*Listen 80/c\Listen 8080" /etc/apache2/*.conf \
+    && sed -i "/^\s*<VirtualHost \*:80>/c\<VirtualHost \*:8080>" /etc/apache2/sites-available/*.conf \
+    && sed -i "/^\s*Require all denied/c\Require all granted" /etc/apache2/apache2.conf
 
-# Set working directory
-WORKDIR /var/www/santex
+WORKDIR /var/www/html/santex
 
-# Install dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     libzip-dev \
@@ -26,30 +27,18 @@ RUN apt-get update && apt-get install -y \
     npm \
     bash
 
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && docker-php-ext-install pdo_mysql zip exif pcntl \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+    && groupadd -g 1000 www \
+    && useradd -u 1000 -ms /bin/bash -g www www
 
-# Install extensions
-RUN docker-php-ext-install pdo_mysql zip exif pcntl
+COPY ./santex-service /var/www/html/santex 
 
-# Install composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Add user for laravel application
-RUN groupadd -g 1000 www
-RUN useradd -u 1000 -ms /bin/bash -g www www
-
-# Copy existing application directory contents
-COPY ./santex-service /var/www/santex
-
-RUN composer install && php artisan key:generate && npm i && npm run production
-
-# Copy existing application directory permissions
-COPY --chown=www:www ./santex-service /var/www/santex
-
-# Change current user to www
+COPY --chown=www:www ./santex-service /var/www/html/santex
 USER www
-
-# Expose port 9000 and start php-fpm server
-EXPOSE 9000
-CMD ["php-fpm"]
+RUN composer install \
+    && npm i \
+    && npm run production \
+    && service apache2 restart

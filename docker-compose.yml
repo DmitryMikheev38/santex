@@ -1,45 +1,61 @@
 version: '3'
+
+#Docker Networks
+networks:
+  app-network:
+
 services:
+
+  traefik:
+    image: "traefik:v2.2"
+    container_name: "traefik"
+    command:
+      #- "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    networks:
+      - app-network
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
   #PHP Service
   santex:
     build:
       context: .
       dockerfile: santex.Dockerfile
-    image: digitalocean.com/php
     container_name: santex
     restart: unless-stopped
     tty: true
-    environment:
-      SERVICE_NAME: santex
-      SERVICE_TAGS: dev
-    working_dir: /var/www/santex
     volumes:
-      - ./santex-service:/var/www/santex
-      - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+      - ./santex-service:/var/www/html/santex
+      # - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
       - app-network
+    ports:
+      - "8081:8080"
+    labels: 
+      - "traefik.enable=true"
+      - "traefik.http.routers.santex.rule=Host(`santex.localhost`)"
+      - "traefik.http.routers.santex.entrypoints=web"
+      - "traefik.http.services.santex-service.loadbalancer.server.port=8080"
 
   #Nginx Service
-  webserver:
-    image: nginx:alpine
-    container_name: webserver
-    restart: unless-stopped
-    tty: true
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./santex-service:/var/www/santex
-      - ./nginx/conf.d/:/etc/nginx/conf.d/
-    networks:
-      - app-network
+  # webserver:
+  #   image: nginx:alpine
+  #   container_name: webserver
+  #   restart: unless-stopped
+  #   tty: true
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./santex-service:/var/www/santex
+  #     - ./nginx/conf.d/:/etc/nginx/conf.d/
+  #   networks:
+  #     - app-network
         
-#Docker Networks
-networks:
-  app-network:
-    driver: bridge
-#Volumes
-volumes:
-  dbdata:
-    driver: local
