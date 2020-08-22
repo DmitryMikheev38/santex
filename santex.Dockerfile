@@ -23,8 +23,6 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     curl \
-    nodejs \
-    npm \
     bash
 
 RUN apt-get clean \
@@ -37,8 +35,13 @@ RUN apt-get clean \
 COPY ./santex-service /var/www/html/santex 
 
 COPY --chown=www:www ./santex-service /var/www/html/santex
-USER www
+
+RUN curl -sL https://deb.nodesource.com/setup_14.x  | bash - \
+    && apt-get -y install nodejs
+
 RUN composer install \
     && npm i \
     && npm run production \
     && service apache2 restart
+
+USER www
