@@ -9,19 +9,25 @@ services:
   traefik:
     image: "traefik:v2.2"
     container_name: "traefik"
-    command:
-      #- "--log.level=DEBUG"
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
     ports:
-      - "80:80"
-      - "8080:8080"
+      - 80:80
+      - 8080:8080
     networks:
       - app-network
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml
+      - ./traefik/serts/:/etc/traefik/certs
+      - ./traefik/conf/:/etc/traefik/dynamic
+
+    labels:
+      - traefik.enable=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.traefik.rule=hostregexp(`{host:.+}`)
+      - traefik.http.routers.traefik.entrypoints=web
+      - traefik.http.routers.traefik.middlewares=redirect-to-https
+
+
 
   #PHP Service
   santex:
@@ -37,10 +43,11 @@ services:
     networks:
       - app-network
     ports:
-      - "8081:8080"
+      - 8081:8080
     labels: 
-      - "traefik.enable=true"
-      - "traefik.http.routers.santex.rule=Host(`santex.localhost`)"
-      - "traefik.http.routers.santex.entrypoints=web"
-      - "traefik.http.services.santex-service.loadbalancer.server.port=8080"
+      - traefik.enable=true
+      - traefik.http.routers.santex.rule=Host(`santex.localhost`)
+      - traefik.http.routers.santex.tls=true
+      - traefik.http.routers.santex.entrypoints=web-secure
+      - traefik.http.services.santex-service.loadbalancer.server.port=8080
       
