@@ -46,7 +46,7 @@ services:
       - 8081:8080
     labels: 
       - traefik.enable=true
-      - traefik.http.routers.santex.rule=Host(`santex.localhost`)
+      - traefik.http.routers.santex.rule=Host(`santex-service-kr.ru`)
       - traefik.http.routers.santex.tls=true
       - traefik.http.routers.santex.entrypoints=web-secure
       - traefik.http.services.santex-service.loadbalancer.server.port=8080
