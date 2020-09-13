@@ -11,7 +11,7 @@ services:
     container_name: "traefik"
     ports:
       - 80:80
-      - 8080:8080
+      - 443:443
     networks:
       - app-network
     volumes:
@@ -42,8 +42,6 @@ services:
       # - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
       - app-network
-    ports:
-      - 8081:8080
     labels: 
       - traefik.enable=true
       - traefik.http.routers.santex.rule=Host(`santex-service-kr.ru`)
